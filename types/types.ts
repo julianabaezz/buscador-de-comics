@@ -12,7 +12,35 @@ type Characters = {
     urls?:[];
 }
 type Comics ={
-    
+    characters: Characters;
+    collectedIssues?: [];
+    collections?:[];
+    creators?:{};
+    dates?:[];
+    description?: string;
+    diamondCode?: string;
+    digitalID?: number;
+    ean?: string;
+    events?: {};
+    format?: string;
+    id?: number;
+    images?: [];
+    isbn?: string;
+    issn?: string;
+    issueNumber?: number;
+    modfied?: string;
+    pageCount?: number;
+    prices?: [{}];
+    resourceURI?: string;
+    series?: {};
+    stories?: {};
+    textObjects?: [];
+    thumbnail?: {};
+    title?: string;
+    upc?: string;
+    urls?: [{}];
+    variantDescription?: string;
+    variants?: []    
 }
 type Events ={
 

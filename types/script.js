@@ -1,22 +1,51 @@
 var baseUrl = "https://gateway.marvel.com:443/v1/public/";
 var apiKey = "21e9721ecd3caa5524429be6d8c1e57d";
 var hash = "ec72458ece65a340f304d0411e0fe2a4";
-var urlComics = baseUrl + "comics?ts=1&apikey=" + apiKey + "&hash=" + hash;
+var urlComics = baseUrl + "comics?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + 0;
 var urlCharacters = baseUrl + "characters?ts=1&apikey=" + apiKey + "&hash=" + hash;
-fetch(urlComics)
-    .then(function (response) {
-    // console.log(response.json)
-    return response.json();
-})
-    .then(function (rta) {
-    console.log(rta);
-    var comics = rta.data.results;
-    console.log(comics);
-    // const table = document.getElementById("movies");
-    // const tbody = table.getElementsByTagName("tbody")[0];
+var params = new URLSearchParams(window.location.search);
+var nextButton = document.getElementById("NextButton");
+var backButton = document.getElementById("BackButton");
+var comicList = document.getElementById("comicList");
+var createTable = function (comics) {
+    comicList.innerHTML = "";
+    document.body.appendChild(comicList);
     comics.forEach(function (item, i) {
-        // 	const tr = document.createElement("tr");
-        // 	const td = document.createElement("td");
+        console.log(item.title);
+        var Items = document.createElement("li");
+        var itemsText = document.createTextNode(item.title);
+        Items.appendChild(itemsText);
+        comicList.appendChild(Items);
+    });
+};
+var nextPage = function () {
+    var page = Number(params.get("page")) || 1;
+    params.set("page", JSON.stringify(page + 1));
+    fetchComics(page);
+    console.log(page);
+};
+var backPage = function () {
+    var page = Number(params.get("page")) || 1;
+    if (page > 1) {
+        params.set("page", JSON.stringify(page - 1));
+    }
+    console.log(page);
+};
+backButton.addEventListener('click', backPage);
+nextButton.addEventListener('click', nextPage);
+var fetchComics = function (offset) {
+    fetch(baseUrl + "comics?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + offset)
+        .then(function (response) {
+        // console.log(response.json)
+        return response.json();
+    })
+        .then(function (rta) {
+        // console.log(rta);
+        var comics = rta.data.results;
+        createTable(comics);
+        // console.log(comics)
+        // const table = document.getElementById("movies");
+        // const tbody = table.getElementsByTagName("tbody")[0];
         // 	const td2 = document.createElement("td");
         // 	const img = document.createElement("img");
         // 	const a = document.createElement("a");
@@ -32,4 +61,14 @@ fetch(urlComics)
         // 	td2.appendChild(a);
         // 	tbody.appendChild(tr);
     });
-});
+};
+fetchComics(0);
+// fetch(urlCharacters)
+// .then((response) => {
+// 	return response.json();
+// })
+// .then((rta) => {
+// 	console.log(rta);
+// 	const characters = rta.data.results;
+//     console.log(characters)
+// })
