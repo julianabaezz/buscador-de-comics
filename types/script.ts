@@ -15,10 +15,20 @@ const createTable = (comics) =>{
 	comicList.innerHTML= ""
 		document.body.appendChild(comicList)
 		comics.forEach((item, i) => {
-			console.log(item.title)
+			// console.log(item.title)
 			const Items = document.createElement("li");
 			const itemsText= document.createTextNode(item.title);
-			Items.appendChild(itemsText);
+			const itemsImg = document.createElement("img");
+			const itemsA = document.createElement("a");
+			const itemsDiv = document.createElement("div")
+			itemsImg.src= `${item.thumbnail.path}.${item.thumbnail.extension}`;
+			let urlComics = item.urls[0].url;
+			itemsA.href = urlComics;
+			itemsDiv.appendChild(itemsText);
+			itemsA.appendChild(itemsImg);
+			itemsDiv.appendChild(itemsA);
+			Items.appendChild(itemsDiv);
+			
 			comicList.appendChild(Items);
 		});
 
@@ -31,7 +41,7 @@ const createTable = (comics) =>{
 		fetchComics(page);
 		
 		
-		console.log(page)	
+		// console.log(page)	
 	}
 
 	const backPage = () =>{
@@ -41,7 +51,7 @@ const createTable = (comics) =>{
 		params.set("page", JSON.stringify(page - 1))
 		}
 		
-		console.log(page)	
+		// console.log(page)	
 	}
 	backButton.addEventListener('click', backPage)
 	nextButton.addEventListener('click', nextPage)
@@ -51,14 +61,15 @@ const createTable = (comics) =>{
 	const fetchComics = (offset) =>{
 	fetch(`${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&offset=${offset}`)
 	.then((response) => {
-		// console.log(response.json)
+		console.log(response.json)
 		return response.json();
 	})
 	.then((rta) => {
 		// console.log(rta);
 		const comics = rta.data.results;
+		
 		createTable(comics)
-        // console.log(comics)
+        console.log(comics)
 		// const table = document.getElementById("movies");
 		// const tbody = table.getElementsByTagName("tbody")[0];
 

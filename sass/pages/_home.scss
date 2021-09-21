@@ -1,0 +1,24 @@
+body{
+    background-color: green;
+
+    div{
+        border: 1px solid black;
+        display: flex;
+        flex-direction: column;
+
+        p{
+            color: azure;
+        }
+
+    }
+    
+}
+
+ul {
+    background-color: aqua;
+    // display: flex;
+    // flex-direction: column;
+}
+img{
+    width: 20%;
+}

@@ -1,7 +1,12 @@
 @import "./layout/navigation";
-
-$primary: #E62429;
-
-.ul {
-    background-color: aqua;
-}
+@import "./base/typography";
+@import "./components/buttons";
+@import "./layout/footer";
+@import "./layout/grid";
+@import "./layout/header";
+@import "./pages/home";
+@import "./themes/theme";
+@import "./utils/functions";
+@import "./utils/helpers";
+@import "./utils/mixins";
+@import "./utils/variables";

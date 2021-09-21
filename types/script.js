@@ -11,10 +11,19 @@ var createTable = function (comics) {
     comicList.innerHTML = "";
     document.body.appendChild(comicList);
     comics.forEach(function (item, i) {
-        console.log(item.title);
+        // console.log(item.title)
         var Items = document.createElement("li");
         var itemsText = document.createTextNode(item.title);
-        Items.appendChild(itemsText);
+        var itemsImg = document.createElement("img");
+        var itemsA = document.createElement("a");
+        var itemsDiv = document.createElement("div");
+        itemsImg.src = item.thumbnail.path + "." + item.thumbnail.extension;
+        var urlComics = item.urls[0].url;
+        itemsA.href = urlComics;
+        itemsDiv.appendChild(itemsText);
+        itemsA.appendChild(itemsImg);
+        itemsDiv.appendChild(itemsA);
+        Items.appendChild(itemsDiv);
         comicList.appendChild(Items);
     });
 };
@@ -22,28 +31,28 @@ var nextPage = function () {
     var page = Number(params.get("page")) || 1;
     params.set("page", JSON.stringify(page + 1));
     fetchComics(page);
-    console.log(page);
+    // console.log(page)	
 };
 var backPage = function () {
     var page = Number(params.get("page")) || 1;
     if (page > 1) {
         params.set("page", JSON.stringify(page - 1));
     }
-    console.log(page);
+    // console.log(page)	
 };
 backButton.addEventListener('click', backPage);
 nextButton.addEventListener('click', nextPage);
 var fetchComics = function (offset) {
     fetch(baseUrl + "comics?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + offset)
         .then(function (response) {
-        // console.log(response.json)
+        console.log(response.json);
         return response.json();
     })
         .then(function (rta) {
         // console.log(rta);
         var comics = rta.data.results;
         createTable(comics);
-        // console.log(comics)
+        console.log(comics);
         // const table = document.getElementById("movies");
         // const tbody = table.getElementsByTagName("tbody")[0];
         // 	const td2 = document.createElement("td");
