@@ -1,15 +1,25 @@
+li {
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande", "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
 body {
-  background-color: red;
+  background-color: green;
 }
 body div {
   border: 1px solid black;
+  display: flex;
+  flex-direction: column;
 }
 body div p {
   color: azure;
 }
 
-.ul {
+ul {
   background-color: aqua;
+}
+
+img {
+  width: 20%;
 }
 
 /*# sourceMappingURL=main.css.map */
