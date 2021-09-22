@@ -9,6 +9,7 @@ var nextButton = document.getElementById("NextButton");
 var backButton = document.getElementById("BackButton");
 var comicList = document.getElementById("comicList");
 var linkButton = document.getElementById("link");
+var offset = Number(params.get("page"));
 var createTable = function (comics) {
     comicList.innerHTML = "";
     document.body.appendChild(comicList);
@@ -31,14 +32,13 @@ var createTable = function (comics) {
 };
 // const page = params.get("page")
 var nextPage = function () {
-    var page = Number(params.get("page"));
-    var value = 1;
-    if (!page) {
-        params.set("page", value.toString());
+    if (!offset) {
+        params.set("page", JSON.stringify(1));
     }
-    params.set("page", (page + 1).toString());
-    console.log(page);
-    fetchComics(page);
+    else {
+        params.set("page", JSON.stringify(offset + 1));
+    }
+    window.location.href = "index.html?" + params;
 };
 var backPage = function () {
     var page = Number(params.get("page")) || 1;
@@ -49,7 +49,8 @@ var backPage = function () {
 };
 backButton.addEventListener('click', backPage);
 nextButton.addEventListener('click', nextPage);
-var fetchComics = function (offset) {
+var fetchComics = function () {
+    console.log(offset);
     fetch(baseUrl + "comics?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + offset + "&orderBy=title")
         .then(function (response) {
         // console.log(response.json)
@@ -78,7 +79,7 @@ var fetchComics = function (offset) {
         // 	tbody.appendChild(tr);
     });
 };
-fetchComics(0);
+fetchComics();
 // fetch(urlCharacters)
 // .then((response) => {
 // 	return response.json();
