@@ -14,6 +14,8 @@ const backButton = document.getElementById("BackButton");
 const comicList = document.getElementById("comicList");
 const linkButton = document.getElementById("link")
 
+let offset = Number(params.get("page")); 
+
 const createTable = (comics) =>{
 	comicList.innerHTML= ""
 		document.body.appendChild(comicList)
@@ -39,17 +41,13 @@ const createTable = (comics) =>{
 	// const page = params.get("page")
 
 	const nextPage = () =>{
-		const page = Number(params.get("page"))
-		const value = 1 
-		if(!page){
-			params.set("page", value.toString());
+		if(!offset){
+			params.set("page", JSON.stringify(1));
+		}else{
+			params.set("page", JSON.stringify(offset + 1));
 		}
-
-		params.set("page", (page + 1).toString());
+		window.location.href = "index.html?" + params; 
 		
-		console.log(page)
-
-		fetchComics(page);
 	}
 
 	const backPage = () =>{
@@ -66,7 +64,8 @@ const createTable = (comics) =>{
 
 
 
-	const fetchComics = (offset) =>{
+	const fetchComics = () =>{
+		console.log(offset);
 	fetch(`${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&offset=${offset}&orderBy=title`)
 	.then((response) => {
 		// console.log(response.json)
@@ -97,7 +96,7 @@ const createTable = (comics) =>{
 		// 	tbody.appendChild(tr);
 	});
 }
-fetchComics(0)
+fetchComics()
 
 	// fetch(urlCharacters)
 	// .then((response) => {
