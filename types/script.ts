@@ -14,7 +14,10 @@ const backButton = document.getElementById("BackButton");
 const comicList = document.getElementById("comicList");
 const linkButton = document.getElementById("link")
 
-let offset = Number(params.get("page")); 
+let limit = 20
+let total = 0
+let offset = Number(params.get("page"))*limit
+
 
 const createTable = (comics) =>{
 	comicList.innerHTML= ""
@@ -39,12 +42,14 @@ const createTable = (comics) =>{
 
 	}
 	// const page = params.get("page")
-
 	const nextPage = () =>{
-		if(!offset){
+		const page= Number(params.get("page"))
+		if(!page){
 			params.set("page", JSON.stringify(1));
-		}else{
-			params.set("page", JSON.stringify(offset + 1));
+		} else{
+			if (page < Math.floor(total/limit)){
+			params.set("page", JSON.stringify(page + 1));
+			}
 		}
 		window.location.href = "index.html?" + params; 
 		
@@ -74,6 +79,9 @@ const createTable = (comics) =>{
 	.then((rta) => {
 		// console.log(rta);
 		const comics = rta.data.results;
+		limit = rta.data.limit;
+		total = rta.data.total;
+		console.log(rta.data.results);
 
 		createTable(comics)
         // console.log(comics)

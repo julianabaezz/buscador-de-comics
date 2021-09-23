@@ -9,7 +9,9 @@ var nextButton = document.getElementById("NextButton");
 var backButton = document.getElementById("BackButton");
 var comicList = document.getElementById("comicList");
 var linkButton = document.getElementById("link");
-var offset = Number(params.get("page"));
+var limit = 20;
+var total = 0;
+var offset = Number(params.get("page")) * limit;
 var createTable = function (comics) {
     comicList.innerHTML = "";
     document.body.appendChild(comicList);
@@ -32,11 +34,14 @@ var createTable = function (comics) {
 };
 // const page = params.get("page")
 var nextPage = function () {
-    if (!offset) {
+    var page = Number(params.get("page"));
+    if (!page) {
         params.set("page", JSON.stringify(1));
     }
     else {
-        params.set("page", JSON.stringify(offset + 1));
+        if (page < Math.floor(total / limit)) {
+            params.set("page", JSON.stringify(page + 1));
+        }
     }
     window.location.href = "index.html?" + params;
 };
@@ -59,6 +64,9 @@ var fetchComics = function () {
         .then(function (rta) {
         // console.log(rta);
         var comics = rta.data.results;
+        limit = rta.data.limit;
+        total = rta.data.total;
+        console.log(rta.data.results);
         createTable(comics);
         // console.log(comics)
         // const table = document.getElementById("movies");
