@@ -99,9 +99,11 @@ var lastPage = function () {
     params.set("page", JSON.stringify(Math.round(total / limit)));
     window.location.href = "/index.html?" + params;
 };
-var fetchComics = function () {
+var fetchData = function () {
     var queryParams = new URLSearchParams(window.location.search);
+    // const selectType = queryParams.get("type")
     queryParams["delete"]("page");
+    queryParams["delete"]("type");
     var calcOffset = offset - limit === -limit ? 0 : offset - limit;
     return fetch(baseUrl + "comics?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&orderBy=title&" + queryParams.toString())
         .then(function (response) {
@@ -112,32 +114,22 @@ var fetchComics = function () {
         var comics = rta.data.results;
         limit = rta.data.limit;
         total = rta.data.total;
-        console.log(total);
         createTable(comics);
     });
 };
 var init = function () { return __awaiter(_this, void 0, void 0, function () {
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, fetchComics()
-                // if (!page){
-                // 	params.set("page", JSON.stringify(1))
-                // 	window.location.href = "/index.html?" + params
-                // }
-            ];
+            case 0: return [4 /*yield*/, fetchData()];
             case 1:
                 _a.sent();
-                // if (!page){
-                // 	params.set("page", JSON.stringify(1))
-                // 	window.location.href = "/index.html?" + params
-                // }
                 disableBtns();
                 return [2 /*return*/];
         }
     });
 }); };
 var disableBtns = function () {
-    if (page === 1) {
+    if (!page || page === 1) {
         backButton.setAttribute("disabled", "true");
         firstPageBtn.setAttribute("disabled", "true");
     }
@@ -152,18 +144,20 @@ var filter = function () {
         title: search.value
     };
     // 2.Cambiar la url 
-    // ??
+    // ¿¿??
     // 3. Generar url de la API
     offset = 0;
     var urlApi = generateUrl(paramsObj);
     window.location.href = "/index.html?" + urlApi;
     // 4. Hacer fetch
     // 5. Renderizar
+    console.log(paramsObj.title);
 };
 var generateUrl = function (paramsObj) {
     // Verificar que los parametro sean validos
     var searchParams = new URLSearchParams();
     searchParams.set("titleStartsWith", paramsObj.title);
+    searchParams.set("type", paramsObj.type);
     return searchParams.toString();
     // return `${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&orderBy=title&${searchParams.toString()}&offset=${offset}`
 };

@@ -16,7 +16,7 @@ const linkButton = document.getElementById("link")
 const firstPageBtn = document.getElementById("firstPageBtn")
 const lastPageBtn = document.getElementById("lastPageBtn")
 const search = <HTMLInputElement> document.getElementById("search");
-const type = document.getElementById("type")
+const type = <HTMLInputElement> document.getElementById("type")
 const orderBy = document.getElementById("orderBy")
 const filterBtn = document.getElementById("filterBtn")
 
@@ -76,9 +76,11 @@ const lastPage = () => {
 
 
 
-const fetchComics = () => {
+const fetchData = () => {
 	const queryParams = new URLSearchParams(window.location.search)
+	// const selectType = queryParams.get("type")
 	queryParams.delete("page")
+	queryParams.delete("type")	
 	const calcOffset = offset - limit === -limit ? 0 : offset - limit
 	return fetch(`${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&orderBy=title&${queryParams.toString()}`)
 		.then((response) => {
@@ -89,22 +91,17 @@ const fetchComics = () => {
 			const comics = rta.data.results
 			limit = rta.data.limit
 			total = rta.data.total
-			console.log(total)
 			createTable(comics)
 		})
 }
 
 const init = async () => {
-	await fetchComics()
-	// if (!page){
-	// 	params.set("page", JSON.stringify(1))
-	// 	window.location.href = "/index.html?" + params
-	// }
+	await fetchData()
 	disableBtns()
 }
 
 const disableBtns = () => {
-	if(page === 1){
+	if(!page || page === 1){
 		backButton.setAttribute("disabled", "true")
 		firstPageBtn.setAttribute("disabled", "true")
 	}
@@ -120,27 +117,30 @@ const filter = () => {
 	const paramsObj = {
 		title: search.value,
 		
-	 }
-
-	 // 2.Cambiar la url 
-
-	 // ??
-
+		
+	}
+	
+	// 2.Cambiar la url 
+	
+	// ¿¿??
+	
 	// 3. Generar url de la API
-	 offset = 0;
-	 const urlApi = generateUrl(paramsObj)
-	 window.location.href = "/index.html?" + urlApi
-
-
+	offset = 0;
+	const urlApi = generateUrl(paramsObj)
+	window.location.href = "/index.html?" + urlApi
+	
+	
 	// 4. Hacer fetch
 	// 5. Renderizar
-
+	
+	console.log(paramsObj.title)
 }
 
 const generateUrl = (paramsObj) => {
 	// Verificar que los parametro sean validos
 	const searchParams: URLSearchParams = new URLSearchParams()
 	searchParams.set("titleStartsWith", paramsObj.title)
+	searchParams.set("type", paramsObj.type)
 	return searchParams.toString()
 	// return `${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&orderBy=title&${searchParams.toString()}&offset=${offset}`
 
