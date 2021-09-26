@@ -1,4 +1,5 @@
 const baseUrl: string = "https://gateway.marvel.com:443/v1/public/"
+
 const apiKey: string = "21e9721ecd3caa5524429be6d8c1e57d"
 const hash: string = "ec72458ece65a340f304d0411e0fe2a4"
 
@@ -17,7 +18,7 @@ const firstPageBtn = document.getElementById("firstPageBtn")
 const lastPageBtn = document.getElementById("lastPageBtn")
 const search = <HTMLInputElement> document.getElementById("search");
 const type = <HTMLInputElement> document.getElementById("type")
-const orderBy = document.getElementById("orderBy")
+const orderBy = <HTMLInputElement> document.getElementById("orderBy")
 const filterBtn = document.getElementById("filterBtn")
 
 let limit = 20
@@ -73,16 +74,31 @@ const lastPage = () => {
 	params.set("page", JSON.stringify(Math.round(total / limit)))
 	window.location.href = "/index.html?" + params
 }
+const defaultOrder= (queryType, queryOrder) =>{
+	// Hacer un switch con todos los casos de orderBy , y por defecto tenga el valor de A-Z
+	if(queryOrder = "A-Z"){
+		if(queryType==="comics"){
+			return "title"
+		}
+		else{
+			return"name"
+		}
+	}	
+}
 
 
 
 const fetchData = () => {
 	const queryParams = new URLSearchParams(window.location.search)
-	// const selectType = queryParams.get("type")
-	queryParams.delete("page")
+	const selectType = queryParams.get("type") ? queryParams.get("type") : "comics"
 	queryParams.delete("type")	
+	queryParams.delete("page")
+	
+	
+	console.log(selectType)
+	
 	const calcOffset = offset - limit === -limit ? 0 : offset - limit
-	return fetch(`${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&orderBy=title&${queryParams.toString()}`)
+	return fetch(`${baseUrl}${selectType}?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&${queryParams.toString()}`)
 		.then((response) => {
 			// console.log(response.json)
 			return response.json()
@@ -116,24 +132,31 @@ const filter = () => {
 	
 	const paramsObj = {
 		title: search.value,
-		
-		
+		type: type.value,
+		orderBy: orderBy.value,		
 	}
 	
+	  
+	for (const key of Object.keys(paramsObj)) {
+		if (paramsObj[key] === "") {
+			delete paramsObj[key];
+		}
+	}
+	debugger
+	console.log(paramsObj);
 	// 2.Cambiar la url 
 	
 	// ¿¿??
 	
 	// 3. Generar url de la API
 	offset = 0;
-	const urlApi = generateUrl(paramsObj)
-	window.location.href = "/index.html?" + urlApi
+	const urlApi = generateUrl(paramsObj);
+	window.location.href = "/index.html?" + urlApi;
 	
 	
 	// 4. Hacer fetch
 	// 5. Renderizar
 	
-	console.log(paramsObj.title)
 }
 
 const generateUrl = (paramsObj) => {
@@ -141,6 +164,10 @@ const generateUrl = (paramsObj) => {
 	const searchParams: URLSearchParams = new URLSearchParams()
 	searchParams.set("titleStartsWith", paramsObj.title)
 	searchParams.set("type", paramsObj.type)
+	searchParams.set("orderBy", defaultOrder(paramsObj.type, paramsObj.orderBy))
+	
+	const prueba = searchParams.get("orderBy")
+	console.log(prueba);
 	return searchParams.toString()
 	// return `${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&orderBy=title&${searchParams.toString()}&offset=${offset}`
 

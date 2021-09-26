@@ -99,13 +99,25 @@ var lastPage = function () {
     params.set("page", JSON.stringify(Math.round(total / limit)));
     window.location.href = "/index.html?" + params;
 };
+var defaultOrder = function (queryType, queryOrder) {
+    // Hacer un switch con todos los casos de orderBy , y por defecto tenga el valor de A-Z
+    if (queryOrder = "A-Z") {
+        if (queryType === "comics") {
+            return "title";
+        }
+        else {
+            return "name";
+        }
+    }
+};
 var fetchData = function () {
     var queryParams = new URLSearchParams(window.location.search);
-    // const selectType = queryParams.get("type")
-    queryParams["delete"]("page");
+    var selectType = queryParams.get("type") ? queryParams.get("type") : "comics";
     queryParams["delete"]("type");
+    queryParams["delete"]("page");
+    console.log(selectType);
     var calcOffset = offset - limit === -limit ? 0 : offset - limit;
-    return fetch(baseUrl + "comics?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&orderBy=title&" + queryParams.toString())
+    return fetch("" + baseUrl + selectType + "?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&" + queryParams.toString())
         .then(function (response) {
         // console.log(response.json)
         return response.json();
@@ -141,8 +153,18 @@ var disableBtns = function () {
 var filter = function () {
     // 1.Obtener datos de los inputs
     var paramsObj = {
-        title: search.value
+        title: search.value,
+        type: type.value,
+        orderBy: orderBy.value
     };
+    for (var _i = 0, _a = Object.keys(paramsObj); _i < _a.length; _i++) {
+        var key = _a[_i];
+        if (paramsObj[key] === "") {
+            delete paramsObj[key];
+        }
+    }
+    debugger;
+    console.log(paramsObj);
     // 2.Cambiar la url 
     // ¿¿??
     // 3. Generar url de la API
@@ -151,13 +173,15 @@ var filter = function () {
     window.location.href = "/index.html?" + urlApi;
     // 4. Hacer fetch
     // 5. Renderizar
-    console.log(paramsObj.title);
 };
 var generateUrl = function (paramsObj) {
     // Verificar que los parametro sean validos
     var searchParams = new URLSearchParams();
     searchParams.set("titleStartsWith", paramsObj.title);
     searchParams.set("type", paramsObj.type);
+    searchParams.set("orderBy", defaultOrder(paramsObj.type, paramsObj.orderBy));
+    var prueba = searchParams.get("orderBy");
+    console.log(prueba);
     return searchParams.toString();
     // return `${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&orderBy=title&${searchParams.toString()}&offset=${offset}`
 };
