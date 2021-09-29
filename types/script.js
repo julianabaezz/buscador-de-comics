@@ -55,6 +55,16 @@ var filterBtn = document.getElementById("filterBtn");
 var limit = 20;
 var total = 0;
 var offset = page * limit;
+var comicsOrderBy = [
+    "A-Z",
+    "Z-A",
+    "Más nuevo",
+    "Más viejo"
+];
+var charactersOrderBy = [
+    "A-Z",
+    "Z-A",
+];
 var createTable = function (comics) {
     comicList.innerHTML = "";
     document.body.appendChild(comicList);
@@ -163,7 +173,6 @@ var filter = function () {
             delete paramsObj[key];
         }
     }
-    debugger;
     console.log(paramsObj);
     // 2.Cambiar la url 
     // ¿¿??
