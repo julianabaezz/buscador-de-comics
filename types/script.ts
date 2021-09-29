@@ -36,6 +36,29 @@ const charactersOrderBy = [
 	"Z-A",
 ]
 
+const createOptions = (type) => {
+	if(type === "comics"){
+		comicsOrderBy.forEach(element => {
+			const comicOption = document.createElement("option")
+			const optionText = document.createTextNode(element)
+			comicOption.appendChild(optionText);
+			orderBy.appendChild(comicOption)
+			
+		})		
+	}
+	// if (type === "characters"){
+	// 	charactersOrderBy.forEach(element => {
+	// 		const characterOption = document.createElement("option")
+	// 		const optionText = document.createTextNode(element)
+	// 		characterOption.appendChild(optionText);
+	// 		orderBy.appendChild(characterOption)
+			
+	// 	})
+	// }
+}
+createOptions(type.value)
+console.log(type.value)
+
 const createTable = (comics) => {
 	comicList.innerHTML = ""
 	document.body.appendChild(comicList)
@@ -43,19 +66,29 @@ const createTable = (comics) => {
 		const Items = document.createElement("li")
 		const itemsText = document.createTextNode(item.title)
 		const itemsImg = document.createElement("img")
-		const itemsA = document.createElement("a")
 		const itemsDiv = document.createElement("div")
 		itemsImg.src = `${item.thumbnail.path}.${item.thumbnail.extension}`
-		let urlComics = item.urls[0].url
-		itemsA.href = urlComics
 		itemsDiv.appendChild(itemsText)
-		itemsA.appendChild(itemsImg)
-		itemsDiv.appendChild(itemsA)
+		itemsDiv.appendChild(itemsImg)
 		Items.appendChild(itemsDiv)
 		comicList.appendChild(Items)
 	})
 
 }
+
+// const createOptions = (type) => {
+// 	switch (type) {
+//         case "comics":
+			
+
+
+//             break;
+//         case "characters":
+            
+//         break
+//     }
+
+// }
 
 const nextPage = () => {
 	if (!page) {
@@ -108,7 +141,6 @@ const fetchData = () => {
 	const calcOffset = offset - limit === -limit ? 0 : offset - limit
 	return fetch(`${baseUrl}${selectType}?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&${queryParams.toString()}`)
 		.then((response) => {
-			// console.log(response.json)
 			return response.json()
 		})
 		.then((rta) => {
@@ -116,6 +148,7 @@ const fetchData = () => {
 			limit = rta.data.limit
 			total = rta.data.total
 			createTable(comics)
+			
 		})
 }
 

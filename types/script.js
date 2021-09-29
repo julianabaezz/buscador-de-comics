@@ -65,6 +65,26 @@ var charactersOrderBy = [
     "A-Z",
     "Z-A",
 ];
+var createOptions = function (type) {
+    if (type === "comics") {
+        comicsOrderBy.forEach(function (element) {
+            var comicOption = document.createElement("option");
+            var optionText = document.createTextNode(element);
+            comicOption.appendChild(optionText);
+            orderBy.appendChild(comicOption);
+        });
+    }
+    // if (type === "characters"){
+    // 	charactersOrderBy.forEach(element => {
+    // 		const characterOption = document.createElement("option")
+    // 		const optionText = document.createTextNode(element)
+    // 		characterOption.appendChild(optionText);
+    // 		orderBy.appendChild(characterOption)
+    // 	})
+    // }
+};
+createOptions(type.value);
+console.log(type.value);
 var createTable = function (comics) {
     comicList.innerHTML = "";
     document.body.appendChild(comicList);
@@ -72,18 +92,22 @@ var createTable = function (comics) {
         var Items = document.createElement("li");
         var itemsText = document.createTextNode(item.title);
         var itemsImg = document.createElement("img");
-        var itemsA = document.createElement("a");
         var itemsDiv = document.createElement("div");
         itemsImg.src = item.thumbnail.path + "." + item.thumbnail.extension;
-        var urlComics = item.urls[0].url;
-        itemsA.href = urlComics;
         itemsDiv.appendChild(itemsText);
-        itemsA.appendChild(itemsImg);
-        itemsDiv.appendChild(itemsA);
+        itemsDiv.appendChild(itemsImg);
         Items.appendChild(itemsDiv);
         comicList.appendChild(Items);
     });
 };
+// const createOptions = (type) => {
+// 	switch (type) {
+//         case "comics":
+//             break;
+//         case "characters":
+//         break
+//     }
+// }
 var nextPage = function () {
     if (!page) {
         params.set("page", JSON.stringify(2));
@@ -129,7 +153,6 @@ var fetchData = function () {
     var calcOffset = offset - limit === -limit ? 0 : offset - limit;
     return fetch("" + baseUrl + selectType + "?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&" + queryParams.toString())
         .then(function (response) {
-        // console.log(response.json)
         return response.json();
     })
         .then(function (rta) {
