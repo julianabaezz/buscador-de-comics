@@ -65,7 +65,23 @@ var charactersOrderBy = [
     "A-Z",
     "Z-A",
 ];
+var consultInfoParams = function () {
+    var typeOrder = params.get("type");
+    var order = params.get("orderBy");
+    var title = params.get("titleStartsWith");
+    if (typeOrder !== "") {
+        type.value = typeOrder;
+    }
+    if (order !== "") {
+        orderBy.value = order;
+    }
+    if (title !== "") {
+        search.value = title;
+    }
+};
+consultInfoParams();
 var createOptions = function (type) {
+    orderBy.innerHTML = "";
     if (type === "comics") {
         comicsOrderBy.forEach(function (element) {
             var comicOption = document.createElement("option");
@@ -74,17 +90,16 @@ var createOptions = function (type) {
             orderBy.appendChild(comicOption);
         });
     }
-    // if (type === "characters"){
-    // 	charactersOrderBy.forEach(element => {
-    // 		const characterOption = document.createElement("option")
-    // 		const optionText = document.createTextNode(element)
-    // 		characterOption.appendChild(optionText);
-    // 		orderBy.appendChild(characterOption)
-    // 	})
-    // }
+    else {
+        charactersOrderBy.forEach(function (element) {
+            var characterOption = document.createElement("option");
+            var optionText = document.createTextNode(element);
+            characterOption.appendChild(optionText);
+            orderBy.appendChild(characterOption);
+        });
+    }
 };
 createOptions(type.value);
-console.log(type.value);
 var createTable = function (comics) {
     comicList.innerHTML = "";
     document.body.appendChild(comicList);
@@ -100,14 +115,6 @@ var createTable = function (comics) {
         comicList.appendChild(Items);
     });
 };
-// const createOptions = (type) => {
-// 	switch (type) {
-//         case "comics":
-//             break;
-//         case "characters":
-//         break
-//     }
-// }
 var nextPage = function () {
     if (!page) {
         params.set("page", JSON.stringify(2));
@@ -134,24 +141,41 @@ var lastPage = function () {
     window.location.href = "/index.html?" + params;
 };
 var defaultOrder = function (queryType, queryOrder) {
-    // Hacer un switch con todos los casos de orderBy , y por defecto tenga el valor de A-Z
-    if (queryOrder = "A-Z") {
-        if (queryType === "comics") {
-            return "title";
-        }
-        else {
-            return "name";
-        }
+    var orderValue;
+    switch (queryType) {
+        case "comics":
+            if (queryOrder === "Z-A") {
+                orderValue = "-title";
+            }
+            else if (queryOrder === "Más nuevo") {
+                orderValue = "-modified";
+            }
+            else if (queryOrder === "Más viejo") {
+                orderValue = "modified";
+            }
+            else {
+                orderValue = "title";
+            }
+            break;
+        case "characters":
+            if (queryOrder === "Z-A") {
+                orderValue = "-name";
+            }
+            else {
+                orderValue = "name";
+            }
+            break;
     }
+    return orderValue;
 };
 var fetchData = function () {
     var queryParams = new URLSearchParams(window.location.search);
     var selectType = queryParams.get("type") ? queryParams.get("type") : "comics";
+    var order = queryParams.get("orderBy") ? queryParams.get("orderBy") : selectType === "comics" ? "title" : "name";
     queryParams["delete"]("type");
     queryParams["delete"]("page");
-    console.log(selectType);
     var calcOffset = offset - limit === -limit ? 0 : offset - limit;
-    return fetch("" + baseUrl + selectType + "?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&" + queryParams.toString())
+    return fetch("" + baseUrl + selectType + "?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&" + queryParams.toString() + "&orderBy=" + order)
         .then(function (response) {
         return response.json();
     })
@@ -190,13 +214,6 @@ var filter = function () {
         type: type.value,
         orderBy: orderBy.value
     };
-    for (var _i = 0, _a = Object.keys(paramsObj); _i < _a.length; _i++) {
-        var key = _a[_i];
-        if (paramsObj[key] === "") {
-            delete paramsObj[key];
-        }
-    }
-    console.log(paramsObj);
     // 2.Cambiar la url 
     // ¿¿??
     // 3. Generar url de la API
@@ -209,13 +226,24 @@ var filter = function () {
 var generateUrl = function (paramsObj) {
     // Verificar que los parametro sean validos
     var searchParams = new URLSearchParams();
-    searchParams.set("titleStartsWith", paramsObj.title);
-    searchParams.set("type", paramsObj.type);
-    searchParams.set("orderBy", defaultOrder(paramsObj.type, paramsObj.orderBy));
-    var prueba = searchParams.get("orderBy");
-    console.log(prueba);
+    for (var _i = 0, _a = Object.keys(paramsObj); _i < _a.length; _i++) {
+        var key = _a[_i];
+        if (paramsObj[key] !== "") {
+            if (key === "orderBy") {
+                searchParams.set(key, defaultOrder(paramsObj.type, paramsObj.orderBy));
+            }
+            else if (key === "title") {
+                searchParams.set("titleStartsWith", paramsObj.title);
+            }
+            else {
+                searchParams.set(key, paramsObj[key]);
+            }
+        }
+        else {
+            delete paramsObj[key];
+        }
+    }
     return searchParams.toString();
-    // return `${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&orderBy=title&${searchParams.toString()}&offset=${offset}`
 };
 init();
 backButton.addEventListener('click', backPage);
@@ -223,6 +251,9 @@ nextButton.addEventListener('click', nextPage);
 firstPageBtn.addEventListener('click', firstPage);
 lastPageBtn.addEventListener('click', lastPage);
 filterBtn.addEventListener('click', filter);
+type.addEventListener('change', function (e) {
+    createOptions(e.target.value);
+});
 // fetch(urlCharacters)
 // .then((response) => {
 // 	return response.json()

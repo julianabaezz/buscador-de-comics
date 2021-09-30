@@ -15,7 +15,7 @@ const comicList = document.getElementById("comicList")
 const linkButton = document.getElementById("link")
 const firstPageBtn = document.getElementById("firstPageBtn")
 const lastPageBtn = document.getElementById("lastPageBtn")
-const search = <HTMLInputElement>document.getElementById("search");
+const search = <HTMLInputElement>document.getElementById("search");	
 const type = <HTMLInputElement>document.getElementById("type")
 const orderBy = <HTMLInputElement>document.getElementById("orderBy")
 const filterBtn = document.getElementById("filterBtn")
@@ -36,7 +36,25 @@ const charactersOrderBy = [
 	"Z-A",
 ]
 
+const consultInfoParams = () => {
+	const typeOrder = params.get("type")
+	const order = params.get("orderBy")
+	const title = params.get("titleStartsWith")
+	if(typeOrder !== ""){
+		type.value = typeOrder;	
+	}
+	if(order !== ""){
+		orderBy.value = order
+	}
+	if(title !== ""){
+		search.value = title
+	}
+}
+
+consultInfoParams()
+
 const createOptions = (type) => {
+	orderBy.innerHTML = ""
 	if(type === "comics"){
 		comicsOrderBy.forEach(element => {
 			const comicOption = document.createElement("option")
@@ -45,19 +63,22 @@ const createOptions = (type) => {
 			orderBy.appendChild(comicOption)
 			
 		})		
-	}
-	// if (type === "characters"){
-	// 	charactersOrderBy.forEach(element => {
-	// 		const characterOption = document.createElement("option")
-	// 		const optionText = document.createTextNode(element)
-	// 		characterOption.appendChild(optionText);
-	// 		orderBy.appendChild(characterOption)
+	}else{
+		charactersOrderBy.forEach(element => {
+			const characterOption = document.createElement("option")
+			const optionText = document.createTextNode(element)
+			characterOption.appendChild(optionText);
+			orderBy.appendChild(characterOption)
 			
-	// 	})
-	// }
+		})
+	}
 }
+
+
+
 createOptions(type.value)
-console.log(type.value)
+
+
 
 const createTable = (comics) => {
 	comicList.innerHTML = ""
@@ -75,21 +96,6 @@ const createTable = (comics) => {
 	})
 
 }
-
-// const createOptions = (type) => {
-// 	switch (type) {
-//         case "comics":
-			
-
-
-//             break;
-//         case "characters":
-            
-//         break
-//     }
-
-// }
-
 const nextPage = () => {
 	if (!page) {
 		params.set("page", JSON.stringify(2))
@@ -120,26 +126,40 @@ const lastPage = () => {
 }
 
 const defaultOrder = (queryType, queryOrder) => {
-	// Hacer un switch con todos los casos de orderBy , y por defecto tenga el valor de A-Z
-	if (queryOrder = "A-Z") {
-		if (queryType === "comics") {
-			return "title"
-		}
-		else {
-			return "name"
-		}
+	let orderValue;
+	switch(queryType){
+		case "comics":
+			if (queryOrder === "Z-A") {
+				orderValue = "-title"
+			}else if(queryOrder === "Más nuevo"){
+				orderValue = "-modified"
+			}else if(queryOrder === "Más viejo"){
+				orderValue = "modified"
+			}else{
+				orderValue = "title"
+			}
+			break;
+		case "characters":
+			if (queryOrder === "Z-A") {
+				orderValue = "-name"
+			}else{
+				orderValue = "name"
+			}
+			break;
 	}
+	return orderValue
+	
 }
 
 const fetchData = () => {
 	const queryParams = new URLSearchParams(window.location.search)
 	const selectType = queryParams.get("type") ? queryParams.get("type") : "comics"
+	const order = queryParams.get("orderBy") ? queryParams.get("orderBy") : selectType === "comics" ? "title" : "name"
 	queryParams.delete("type")
 	queryParams.delete("page")
-	console.log(selectType)
 
 	const calcOffset = offset - limit === -limit ? 0 : offset - limit
-	return fetch(`${baseUrl}${selectType}?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&${queryParams.toString()}`)
+	return fetch(`${baseUrl}${selectType}?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&${queryParams.toString()}&orderBy=${order}`)
 		.then((response) => {
 			return response.json()
 		})
@@ -170,30 +190,17 @@ const disableBtns = () => {
 
 const filter = () => {
 	// 1.Obtener datos de los inputs
-
 	const paramsObj = {
 		title: search.value,
 		type: type.value,
 		orderBy: orderBy.value,
 	}
-
-
-	for (const key of Object.keys(paramsObj)) {
-		if (paramsObj[key] === "") {
-			delete paramsObj[key];
-		}
-	}
-	console.log(paramsObj);
 	// 2.Cambiar la url 
-
 	// ¿¿??
-
 	// 3. Generar url de la API
 	offset = 0;
 	const urlApi = generateUrl(paramsObj);
 	window.location.href = "/index.html?" + urlApi;
-
-
 	// 4. Hacer fetch
 	// 5. Renderizar
 
@@ -202,15 +209,21 @@ const filter = () => {
 const generateUrl = (paramsObj) => {
 	// Verificar que los parametro sean validos
 	const searchParams: URLSearchParams = new URLSearchParams()
-	searchParams.set("titleStartsWith", paramsObj.title)
-	searchParams.set("type", paramsObj.type)
-	searchParams.set("orderBy", defaultOrder(paramsObj.type, paramsObj.orderBy))
-
-	const prueba = searchParams.get("orderBy")
-	console.log(prueba);
+	for (const key of Object.keys(paramsObj)) {
+		if (paramsObj[key] !== "") {
+			if(key === "orderBy"){
+				searchParams.set(key, defaultOrder(paramsObj.type, paramsObj.orderBy))
+			}else if(key === "title"){
+				searchParams.set("titleStartsWith", paramsObj.title)
+			}else{
+				searchParams.set(key, paramsObj[key])
+			}
+		}else{
+			delete paramsObj[key];
+		}
+	}
 	return searchParams.toString()
-	// return `${baseUrl}comics?ts=1&apikey=${apiKey}&hash=${hash}&orderBy=title&${searchParams.toString()}&offset=${offset}`
-
+	
 
 }
 
@@ -221,6 +234,9 @@ nextButton.addEventListener('click', nextPage)
 firstPageBtn.addEventListener('click', firstPage)
 lastPageBtn.addEventListener('click', lastPage)
 filterBtn.addEventListener('click', filter)
+type.addEventListener('change', (e) => {
+	createOptions(e.target.value)
+})
 
 	// fetch(urlCharacters)
 	// .then((response) => {
