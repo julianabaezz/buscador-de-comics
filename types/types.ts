@@ -48,3 +48,10 @@ type Events ={
 type Series = {
 
 }
+type paramsObj = {
+    title?: string;
+    name?: string;
+    type?: string;
+    orderBy?: string
+
+}

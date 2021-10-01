@@ -100,21 +100,25 @@ var createOptions = function (type) {
     }
 };
 createOptions(type.value);
+//CREAR PÁGINA CON RESULTADOS DE BÚSQUEDA
 var createTable = function (comics) {
     comicList.innerHTML = "";
     document.body.appendChild(comicList);
     comics.forEach(function (item, i) {
         var Items = document.createElement("li");
-        var itemsText = document.createTextNode(item.title);
+        var itemsTitle = document.createTextNode(item.title);
+        var itemsName = document.createTextNode(item.name);
         var itemsImg = document.createElement("img");
         var itemsDiv = document.createElement("div");
         itemsImg.src = item.thumbnail.path + "." + item.thumbnail.extension;
-        itemsDiv.appendChild(itemsText);
+        var typeTitle = type.value === "comics" ? itemsTitle : itemsName;
+        itemsDiv.appendChild(typeTitle);
         itemsDiv.appendChild(itemsImg);
         Items.appendChild(itemsDiv);
         comicList.appendChild(Items);
     });
 };
+//BOTONES DE PÁGINAS
 var nextPage = function () {
     if (!page) {
         params.set("page", JSON.stringify(2));
@@ -148,10 +152,10 @@ var defaultOrder = function (queryType, queryOrder) {
                 orderValue = "-title";
             }
             else if (queryOrder === "Más nuevo") {
-                orderValue = "-modified";
+                orderValue = "-focDate";
             }
             else if (queryOrder === "Más viejo") {
-                orderValue = "modified";
+                orderValue = "focDate";
             }
             else {
                 orderValue = "title";
@@ -168,14 +172,23 @@ var defaultOrder = function (queryType, queryOrder) {
     }
     return orderValue;
 };
+//FETCH
 var fetchData = function () {
     var queryParams = new URLSearchParams(window.location.search);
     var selectType = queryParams.get("type") ? queryParams.get("type") : "comics";
-    var order = queryParams.get("orderBy") ? queryParams.get("orderBy") : selectType === "comics" ? "title" : "name";
-    queryParams["delete"]("type");
-    queryParams["delete"]("page");
+    var order = defaultOrder(selectType, queryParams.get("orderBy"));
     var calcOffset = offset - limit === -limit ? 0 : offset - limit;
-    return fetch("" + baseUrl + selectType + "?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&" + queryParams.toString() + "&orderBy=" + order)
+    var url = "" + baseUrl + selectType + "?ts=1&apikey=" + apiKey + "&hash=" + hash + "&offset=" + calcOffset + "&orderBy=" + order;
+    if (search.value !== "") {
+        console.log(search.value);
+        if (selectType === "comics") {
+            url += "&titleStartsWith=" + queryParams.get("titleStartsWith");
+        }
+        if (selectType === "characters") {
+            url += "&nameStartsWith=" + queryParams.get("nameStartsWith");
+        }
+    }
+    return fetch(url)
         .then(function (response) {
         return response.json();
     })
@@ -197,6 +210,7 @@ var init = function () { return __awaiter(_this, void 0, void 0, function () {
         }
     });
 }); };
+//DESHABILITAR BOTONES
 var disableBtns = function () {
     if (!page || page === 1) {
         backButton.setAttribute("disabled", "true");
@@ -207,43 +221,28 @@ var disableBtns = function () {
         lastPageBtn.setAttribute("disabled", "true");
     }
 };
+//FILTROS  
 var filter = function () {
+    offset = 0;
     // 1.Obtener datos de los inputs
-    var paramsObj = {
-        title: search.value,
-        type: type.value,
-        orderBy: orderBy.value
-    };
+    // const paramsObj: paramsObj = {
+    // 	type: type.value,
+    // 	orderBy: defaultOrder(type, orderBy.value),
+    // }
+    // paramsObj.type === "comics" ? paramsObj.title = search.value : paramsObj.name = search.value;
+    var setParams = new URLSearchParams();
+    setParams.set("type", type.value);
+    setParams.set("orderBy", orderBy.value);
+    if (search.value !== "") {
+        type.value === "comics" ? setParams.set("titleStartsWith", search.value) : setParams.set("nameStartsWith", search.value);
+    }
+    window.location.href = "/index.html?" + setParams;
     // 2.Cambiar la url 
     // ¿¿??
     // 3. Generar url de la API
-    offset = 0;
-    var urlApi = generateUrl(paramsObj);
-    window.location.href = "/index.html?" + urlApi;
+    // const urlApi = generateUrl(paramsObj);
     // 4. Hacer fetch
     // 5. Renderizar
-};
-var generateUrl = function (paramsObj) {
-    // Verificar que los parametro sean validos
-    var searchParams = new URLSearchParams();
-    for (var _i = 0, _a = Object.keys(paramsObj); _i < _a.length; _i++) {
-        var key = _a[_i];
-        if (paramsObj[key] !== "") {
-            if (key === "orderBy") {
-                searchParams.set(key, defaultOrder(paramsObj.type, paramsObj.orderBy));
-            }
-            else if (key === "title") {
-                searchParams.set("titleStartsWith", paramsObj.title);
-            }
-            else {
-                searchParams.set(key, paramsObj[key]);
-            }
-        }
-        else {
-            delete paramsObj[key];
-        }
-    }
-    return searchParams.toString();
 };
 init();
 backButton.addEventListener('click', backPage);

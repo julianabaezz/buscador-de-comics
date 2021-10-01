@@ -1,4 +1,5 @@
 const baseUrl: string = "https://gateway.marvel.com:443/v1/public/"
+
 const apiKey: string = "21e9721ecd3caa5524429be6d8c1e57d"
 const hash: string = "ec72458ece65a340f304d0411e0fe2a4"
 
@@ -133,9 +134,9 @@ const defaultOrder = (queryType, queryOrder) => {
 			if (queryOrder === "Z-A") {
 				orderValue = "-title"
 			}else if(queryOrder === "Más nuevo"){
-				orderValue = "-focDate"
+				orderValue = "-modified"
 			}else if(queryOrder === "Más viejo"){
-				orderValue = "focDate"
+				orderValue = "modified"
 			}else{
 				orderValue = "title"
 			}
@@ -147,29 +148,21 @@ const defaultOrder = (queryType, queryOrder) => {
 				orderValue = "name"
 			}
 			break;
-		}
-		return orderValue
-		
+	}
+	return [orderValue, queryOrder]
+	
 }
 
 //FETCH
 const fetchData = () => {
 	const queryParams = new URLSearchParams(window.location.search)
 	const selectType = queryParams.get("type") ? queryParams.get("type") : "comics"
-	const order = defaultOrder(selectType, queryParams.get("orderBy"))
-	const calcOffset = offset - limit === -limit ? 0 : offset - limit
-	let url = `${baseUrl}${selectType}?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&orderBy=${order}`;
-	if(search.value !== ""){
-		console.log(search.value)
-		if(selectType === "comics"){
-			url += `&titleStartsWith=${queryParams.get("titleStartsWith")}`
-		}
-		if(selectType === "characters"){
-			url += `&nameStartsWith=${queryParams.get("nameStartsWith")}`
-		}
-	}
+	const order = queryParams.get("orderBy") ? queryParams.get("orderBy") : selectType === "comics" ? "title" : "name"
+	queryParams.delete("type")
+	queryParams.delete("page")
 
-	return fetch(url)
+	const calcOffset = offset - limit === -limit ? 0 : offset - limit
+	return fetch(`${baseUrl}${selectType}?ts=1&apikey=${apiKey}&hash=${hash}&offset=${calcOffset}&${queryParams.toString()}&orderBy=${order}`)
 		.then((response) => {
 			return response.json()
 		})
@@ -201,37 +194,41 @@ const disableBtns = () => {
 
 //FILTROS  
 const filter = () => {
-	offset = 0;
 	// 1.Obtener datos de los inputs
-	// const paramsObj: paramsObj = {
-	// 	type: type.value,
-	// 	orderBy: defaultOrder(type, orderBy.value),
-	// }
-	// paramsObj.type === "comics" ? paramsObj.title = search.value : paramsObj.name = search.value;
-
-	const setParams: URLSearchParams = new URLSearchParams();
-	setParams.set("type", type.value);
-	setParams.set("orderBy", orderBy.value);
-	
-	if (search.value !== ""){
-		type.value === "comics" ? setParams.set("titleStartsWith", search.value) : setParams.set("nameStartsWith", search.value);
+	const paramsObj = {
+		title: search.value,
+		type: type.value,
+		orderBy: orderBy.value,
 	}
-
-	window.location.href = "/index.html?" + setParams;
-
-
-
-	
-
-
 	// 2.Cambiar la url 
 	// ¿¿??
 	// 3. Generar url de la API
-	
-	// const urlApi = generateUrl(paramsObj);
-	
+	offset = 0;
+	const urlApi = generateUrl(paramsObj);
+	window.location.href = "/index.html?" + urlApi;
 	// 4. Hacer fetch
 	// 5. Renderizar
+
+}
+
+const generateUrl = (paramsObj) => {
+	// Verificar que los parametro sean validos
+	const searchParams: URLSearchParams = new URLSearchParams()
+	for (const key of Object.keys(paramsObj)) {
+		if (paramsObj[key] !== "") {
+			if(key === "orderBy"){
+				searchParams.set(key, defaultOrder(paramsObj.type, paramsObj.orderBy)[0])
+			}else if(key === "title"){
+				searchParams.set("titleStartsWith", paramsObj.title)
+			}else{
+				searchParams.set(key, paramsObj[key])
+			}
+		}else{
+			delete paramsObj[key];
+		}
+	}
+	return searchParams.toString()
+	
 
 }
 
